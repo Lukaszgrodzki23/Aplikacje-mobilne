@@ -1,8 +1,10 @@
 package com.example.myapplication
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,23 +19,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : AppCompatActivity(), MyListFragment.Listener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val fragmentManager = supportFragmentManager
+        val container = findViewById<View>(R.id.fragment_container)
+        if (container != null) {
+            val infoFragment = InfoFragment()
+            val sfm = supportFragmentManager.beginTransaction()
+            sfm.replace(R.id.fragment_container, infoFragment)
+            sfm.commit()
+        }
 
+    }
 
-
-        // Sample list of trails
-        val trails = listOf(
-            Trail("Trail A", "Trail A..."),
-            Trail("Trail B", "Trail B..."),
-            Trail("Trail C", "Trail C...")
-        )
-        val bundle = Bundle()
-        bundle.putSerializable("trails", ArrayList(trails))
-
-
+    override fun trailChosen(i: Int){
+        val container = findViewById<View>(R.id.fragment_container)
+        if (container != null){
+            val infoFragment = InfoFragment()
+            val bundle = Bundle()
+            bundle.putString("index", i.toString())
+            infoFragment.arguments = bundle
+            val sfm = supportFragmentManager.beginTransaction()
+            sfm.replace(R.id.fragment_container, infoFragment)
+            sfm.commit()
+        }
+        else{
+            val intent = Intent(this, InfoActivity::class.java)
+            intent.putExtra("index", i.toString())
+            startActivity(intent)
+        }
     }
 }
