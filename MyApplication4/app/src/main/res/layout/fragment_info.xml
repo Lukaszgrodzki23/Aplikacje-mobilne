@@ -16,6 +16,13 @@
         android:id="@+id/infoView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars = "vertical"
+        android:scrollbars="vertical"
         android:textSize="23sp" />
+
+    <!-- Container for the dynamic fragment -->
+    <FrameLayout
+        android:id="@+id/dynamic_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>
