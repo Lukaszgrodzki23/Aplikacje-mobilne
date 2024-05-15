@@ -6,19 +6,23 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.myapplication.R
 
 class StepCounterFragment : Fragment(), SensorEventListener {
+
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
     private var isRunning = false
     private var stepCount = 0
+    private var initialStepCount = -1
     private lateinit var stepCountView: TextView
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
@@ -36,6 +40,10 @@ class StepCounterFragment : Fragment(), SensorEventListener {
 
         sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
+        if (stepSensor == null) {
+            Toast.makeText(requireContext(), "No step sensor available!", Toast.LENGTH_SHORT).show()
+        }
 
         startButton.setOnClickListener {
             startStepCounter()
@@ -56,6 +64,8 @@ class StepCounterFragment : Fragment(), SensorEventListener {
         if (stepSensor != null && !isRunning) {
             sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
             isRunning = true
+            initialStepCount = -1
+            Toast.makeText(requireContext(), "Step counter started", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -64,6 +74,7 @@ class StepCounterFragment : Fragment(), SensorEventListener {
             sensorManager.unregisterListener(this, stepSensor)
             isRunning = false
             saveStepCount()
+            Toast.makeText(requireContext(), "Step counter stopped", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -73,6 +84,7 @@ class StepCounterFragment : Fragment(), SensorEventListener {
             isRunning = false
             stepCount = 0
             stepCountView.text = stepCount.toString()
+            Toast.makeText(requireContext(), "Step counter aborted", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -84,9 +96,13 @@ class StepCounterFragment : Fragment(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if (isRunning) {
-            stepCount = event?.values?.get(0)?.toInt() ?: 0
+        if (isRunning && event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
+            if (initialStepCount == -1) {
+                initialStepCount = event.values[0].toInt()
+            }
+            stepCount = event.values[0].toInt() - initialStepCount
             stepCountView.text = stepCount.toString()
+            Log.d("StepCounterFragment", "Steps: $stepCount")
         }
     }
 
